@@ -103,7 +103,10 @@ y_pred = model(x)
 
 # Compute and print loss. We pass Tensors containing the predicted and true
 # values of y, and the loss function returns a Tensor containing the loss.
+
+print(torch.sum(torch.abs(torch.round(y_pred)-y)))
+
 loss = loss_fn(y_pred, y)
 print("validation loss: ", loss.item())
-for i in range(5):
-  print(model(x[i]) , "  ", y[i])
+'''for i in range(5):
+  print(model(x[i]) , "  ", y[i])'''
