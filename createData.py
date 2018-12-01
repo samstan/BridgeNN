@@ -2,25 +2,29 @@
 
 import torch
 import random
+import os
 
 SEED = 955 #Seed provided in order to make sure the same data is generated each time.
-TRAINING_SIZE = 10000
-VALIDATION_SIZE = 1000
+TRAINING_SIZE = 100000
+VALIDATION_SIZE = 10000
+
+def convertToTensor(inputs, result):
+    temp = torch.cat((inputs[0], inputs[1], inputs[2][0], inputs[3][0], inputs[4][0], inputs[5][0]),0)
+    return torch.cat((temp.float(), torch.tensor([result]).float()),0)
+    
 
 def generateData():
     """Creates a file with randomly generated data that 
     has both the inputs and outputs."""
     random.seed(SEED)
-    trainingSet = []
-    validationSet = []
-    for _ in range(TRAINING_SIZE):
+    for i in range(TRAINING_SIZE):
         inputs = getRandomDeal(1)
         result = getResultOneCard(inputs)
-        trainingSet += [[inputs, result]]
-    for _ in range(VALIDATION_SIZE):
+        torch.save(convertToTensor(inputs,result), os.path.join('trn', str(i)+'.pt'))
+    for i in range(VALIDATION_SIZE):
         inputs = getRandomDeal(1)
         result = getResultOneCard(inputs)
-        validationSet += [[inputs, result]]
+        torch.save(convertToTensor(inputs,result), os.path.join('val', str(i)+'.pt'))
 
 def getResultOneCard(inputs):
     """Generates the ground truth for a hand with only card. Inputs is a list in 
