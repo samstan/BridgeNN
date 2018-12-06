@@ -12,23 +12,33 @@ this is where the nn package can help. The nn package defines a set of Modules,
 which you can think of as a neural network layer that has produces output from
 input and may have some trainable weights or other state.
 """
+def toSoftmax(y):
+  """Takes in an n x 1 x 4 x 13 vector of y and returns a n x 1 x 4.
+  The 4x13 are assumed to all have the same value, and that value is 
+  encoded as a one-hot in the 3rd dimension of the returned tensor"""
+  onehot = torch.zeros(y.size()[0], y.size()[1], 4)
+  for i in range(y.size()[0]):
+    x = (int)(y[i][0][0][0].item())
+    onehot[i][0][x] = 1
+  return onehot
 
 device = torch.device('cpu')
 # device = torch.device('cuda') # Uncomment this to run on GPU
 
 # T is size of training set
-# N is batch size; D_in is input dimension;
-# H is hidden dimension; D_out is output dimension.
-T, N, D_in, H, D_out = 100000, 200, 5*4*13, 13, 4
+# N is batch size; D_in is input dimension(the number of 4x13 layers);
+# H is hidden dimension; poolSize is the number of outputs from maxPooling; D_out is output dimension.
+T, N, D_in, H, poolSize, D_out = 100000, 200, 5, 13, 156, 4
 
 # Create random Tensors to hold inputs and outputs
 x_list = []
 for i in range(0,100000):
   x_list.append(torch.load(os.path.join('trn', str(i)+'.pt')))
-
+print("loaded training data")
 x = torch.stack(x_list)
-y = torch.index_select(x, 1, torch.tensor([217]))
-x = torch.index_select(x, 1, torch.tensor(range(217)))
+y = torch.index_select(x, 1, torch.tensor([5]))
+y = toSoftmax(y)
+x = torch.index_select(x, 1, torch.tensor(range(5)))
 #x = torch.rand(N, D_in, device=device)s
 #y = torch.rand(N, D_out, device=device)
 
@@ -38,13 +48,28 @@ x = torch.index_select(x, 1, torch.tensor(range(217)))
 # linear function, and holds internal Tensors for its weight and bias.
 # After constructing the model we use the .to() method to move it to the
 # desired device.
-model = torch.nn.Sequential(
-          torch.nn.Conv3d(1, H, kernel_size = (3, 3, 3), stride=1, padding = (1,1,1)),
+class Net(torch.nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv = torch.nn.Conv2d(D_in, H, 3, stride=1, padding=1)
+        self.maxpool = torch.nn.MaxPool2d(kernel_size = 2, stride=2)
+        self.fc1 = torch.nn.Linear(poolSize, D_out)
+
+    def forward(self, x):
+        x = self.maxpool(torch.relu(self.conv(x)))
+        x = x.view(-1, poolSize)
+        x = self.fc1(x)
+        return torch.softmax(x, 1)
+
+model = Net()
+"""model = torch.nn.Sequential(
+          torch.nn.Conv2d(D_in, H, 3, stride=1, padding = 1),
           torch.nn.ReLU(),
-          torch.nn.MaxPool3d(kernel_size = (1, 2, 2), stride = (1, 2, 2)),
-          torch.nn.Linear(D_in, D_out),
+          torch.nn.MaxPool2d(kernel_size = 2, stride = 2),
+          torch.nn.Linear(26*N, D_out),
           torch.nn.Softmax()
         ).to(device)
+
 modelOne = torch.nn.Sequential(
           torch.nn.Linear(D_in, H),
           torch.nn.ReLU(),
@@ -54,7 +79,7 @@ modelOne = torch.nn.Sequential(
           torch.nn.ReLU(),
           torch.nn.Linear(H-10, D_out),
           torch.nn.Sigmoid()
-        ).to(device)
+        ).to(device)"""
 
 # The nn package also contains definitions of popular loss functions; in this
 # case we will use Mean Squared Error (MSE) as our loss function. Setting
@@ -103,17 +128,32 @@ for i in range(0,10000):
   x_list.append(torch.load(os.path.join('val', str(i)+'.pt')))
 
 x = torch.stack(x_list)
-y = torch.index_select(x, 1, torch.tensor([217]))
-x = torch.index_select(x, 1, torch.tensor(range(217)))
+y = torch.index_select(x, 1, torch.tensor([5]))
+y = toSoftmax(y)
+x = torch.index_select(x, 1, torch.tensor(range(5)))
 
 y_pred = model(x)
 
 # Compute and print loss. We pass Tensors containing the predicted and true
 # values of y, and the loss function returns a Tensor containing the loss.
 
-print(torch.sum(torch.abs(torch.round(y_pred)-y)))
+incorrectGuesses = 0
+for i in range(0, 10000):
+  guess = [0, y_pred[i][0]]
+  for j in range(3):
+    if y_pred[i][j+1] > guess[1]:
+      guess = [j, y_pred[i][j]]
+  actual = 0
+  for j in range(4):
+    if y[i][0][j].item() == 1.0:
+      actual = j
+  if not guess[0] == actual:
+    incorrectGuesses += 1
+print(incorrectGuesses)
+#print(torch.sum(torch.abs(torch.round(y_pred)-y)))
 
 loss = loss_fn(y_pred, y)
 print("validation loss: ", loss.item())
 '''for i in range(5):
   print(model(x[i]) , "  ", y[i])'''
+

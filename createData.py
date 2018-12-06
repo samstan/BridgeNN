@@ -19,13 +19,15 @@ def generateData():
     random.seed(SEED)
     for i in range(TRAINING_SIZE):
         inputs = getRandomDeal(1)
-        result = getResultOneCardNT(inputs)
-        torch.save(result, os.path.join('trn', str(i)+'.pt'))
+        result = torch.zeros(1, 4, 13)
+        result = result.new_full((1,4, 13), getResultOneCardNT(inputs))
+        torch.save(torch.cat((inputs, result), 0), os.path.join('trn', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('trn', str(i)+'.pt'))
     for i in range(VALIDATION_SIZE):
         inputs = getRandomDeal(1)
-        result = getResultOneCardNT(inputs)
-        torch.save(result, os.path.join('val', str(i)+'.pt'))
+        result = torch.zeros(1,4, 13)
+        result = result.new_full((1,4, 13), getResultOneCardNT(inputs))
+        torch.save(torch.cat((inputs, result), 0), os.path.join('val', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('val', str(i)+'.pt'))
 
 def getResultOneCardNT(inputs):
