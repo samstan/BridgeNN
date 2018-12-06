@@ -16,10 +16,10 @@ input and may have some trainable weights or other state.
 device = torch.device('cpu')
 # device = torch.device('cuda') # Uncomment this to run on GPU
 
+# T is size of training set
 # N is batch size; D_in is input dimension;
 # H is hidden dimension; D_out is output dimension.
-# T is size of training set
-T, N, D_in, H, D_out = 100000, 200, 217, 52, 1
+T, N, D_in, H, D_out = 100000, 200, 5*4*13, 13, 4
 
 # Create random Tensors to hold inputs and outputs
 x_list = []
@@ -39,6 +39,13 @@ x = torch.index_select(x, 1, torch.tensor(range(217)))
 # After constructing the model we use the .to() method to move it to the
 # desired device.
 model = torch.nn.Sequential(
+          torch.nn.Conv3d(1, H, kernel_size = (3, 3, 3), stride=1, padding = (1,1,1)),
+          torch.nn.ReLU(),
+          torch.nn.MaxPool3d(kernel_size = (1, 2, 2), stride = (1, 2, 2)),
+          torch.nn.Linear(D_in, D_out),
+          torch.nn.Softmax()
+        ).to(device)
+modelOne = torch.nn.Sequential(
           torch.nn.Linear(D_in, H),
           torch.nn.ReLU(),
           torch.nn.Linear(H, H-5),
