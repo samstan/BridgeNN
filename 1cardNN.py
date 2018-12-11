@@ -18,7 +18,7 @@ def toSoftmax(y):
   encoded as a one-hot in the 3rd dimension of the returned tensor"""
   onehot = torch.zeros(y.size()[0])
   for i in range(y.size()[0]):
-    onehot[i] = (int)(y[i][0][0][0].item())
+    onehot[i] = (int)(y[i][0][0][0].item())%2
   return onehot
 
 device = torch.device('cpu')
@@ -27,7 +27,7 @@ device = torch.device('cpu')
 # T is size of training set
 # N is batch size; D_in is input dimension(the number of 4x13 layers);
 # H is hidden dimension; poolSize is the number of outputs from maxPooling; D_out is output dimension.
-T, N, D_in, H, poolSize, D_out = 100000, 200, 4, 13, 156, 4
+T, N, D_in, H, poolSize, D_out = 100000, 200, 4, 13, 26*4*13, 1
 
 # Create random Tensors to hold inputs and outputs
 x_list = []
@@ -50,17 +50,18 @@ x = torch.index_select(x, 1, torch.tensor(range(4)))
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv = torch.nn.Conv2d(D_in, H, 3, stride=1, padding=1)
-        self.maxpool = torch.nn.MaxPool2d(kernel_size = 2, stride=2)
+        self.conv1 = torch.nn.Conv2d(D_in, H, 3, stride=1, padding=1)
+        self.conv2 = torch.nn.Conv2d(H, 2*H, 3, stride=1, padding=1)
         self.fc1 = torch.nn.Linear(poolSize, D_out)
         self.dropout = torch.nn.Dropout(.2)
 
     def forward(self, x):
-        x = self.maxpool(torch.relu(self.conv(x)))
+        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv2(x))
         x = self.dropout(x)
         x = x.view(-1, poolSize)
         x = self.fc1(x)
-        return torch.log_softmax(x, 1)
+        return torch.sigmoid(x)
 
 model = Net()
 """model = torch.nn.Sequential(
@@ -88,7 +89,7 @@ modelOne = torch.nn.Sequential(
 # than the mean; this is for consistency with the examples above where we
 # manually compute the loss, but in practice it is more common to use mean
 # squared error as a loss by setting reduction='elementwise_mean'.
-loss_fn = torch.nn.NLLLoss()
+loss_fn = torch.nn.BCELoss()
 
 learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -108,7 +109,7 @@ for t in range(50):
 
         # in case you wanted a semi-full example
       batch_y_pred = model.forward(batch_x)
-      loss = loss_fn(batch_y_pred,batch_y.long())
+      loss = loss_fn(batch_y_pred,batch_y)
 
 
       model.zero_grad()
@@ -138,7 +139,7 @@ y_pred = model(x)
 # Compute and print loss. We pass Tensors containing the predicted and true
 # values of y, and the loss function returns a Tensor containing the loss.
 
-incorrectGuesses = 0
+"""incorrectGuesses = 0
 for i in range(0, 10000):
   guess = [0, y_pred[i][0]]
   for j in range(3):
@@ -146,10 +147,10 @@ for i in range(0, 10000):
       guess = [j, y_pred[i][j]]
   if not guess[0] == y[i]:
     incorrectGuesses += 1
-print(incorrectGuesses)
-#print(torch.sum(torch.abs(torch.round(y_pred)-y)))
+print(incorrectGuesses)"""
+print(torch.sum(torch.abs(torch.round(y_pred)-y)))
 
-loss = loss_fn(y_pred, y.long())
+loss = loss_fn(y_pred, y)
 print("validation loss: ", loss.item())
 '''for i in range(5):
   print(model(x[i]) , "  ", y[i])'''
