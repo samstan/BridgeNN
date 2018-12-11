@@ -60,7 +60,7 @@ class Net(torch.nn.Module):
         x = self.dropout(x)
         x = x.view(-1, poolSize)
         x = self.fc1(x)
-        return torch.softmax(x, 1)
+        return torch.log_softmax(x, 1)
 
 model = Net()
 """model = torch.nn.Sequential(
@@ -144,16 +144,12 @@ for i in range(0, 10000):
   for j in range(3):
     if y_pred[i][j+1] > guess[1]:
       guess = [j, y_pred[i][j]]
-  actual = 0
-  for j in range(4):
-    if y[i][j].item() == 1.0:
-      actual = j
-  if not guess[0] == actual:
+  if not guess[0] == y[i]:
     incorrectGuesses += 1
 print(incorrectGuesses)
 #print(torch.sum(torch.abs(torch.round(y_pred)-y)))
 
-loss = loss_fn(y_pred, y)
+loss = loss_fn(y_pred, y.long())
 print("validation loss: ", loss.item())
 '''for i in range(5):
   print(model(x[i]) , "  ", y[i])'''
