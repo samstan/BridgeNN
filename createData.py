@@ -33,8 +33,9 @@ def generateData():
 def getResultOneCardNT(inputs):
     """Generates the ground truth for a hand with only one card, no trump, and the new
     input format. Output format is also changed to be 0 = N, ..., 3 = W"""
-    cards = [getValue2D(inputs[1]), getValue2D(inputs[2]),getValue2D(inputs[3]),getValue2D(inputs[4])]
-    lead = (int)(inputs[0][0][0].item())
+    #cards = [getValue2D(inputs[1]), getValue2D(inputs[2]),getValue2D(inputs[3]),getValue2D(inputs[4])]
+    cards = [getValue2D(inputs[0]), getValue2D(inputs[1]),getValue2D(inputs[2]),getValue2D(inputs[3])]
+    lead = 0#(int)(inputs[0][0][0].item())
     topCard = [lead, cards[lead]]
     for i in range(3):
         lead += 1
@@ -71,8 +72,8 @@ def getRandomDeal(cards):
     First 4x13 all same value 0-3 for lead: 0=N, ...,3=W
     Other 4 are each player's cards, Spades...Clubs, 2...A"""
     l = random.randint(0, 3)
-    lead = torch.ones(4, 13)
-    lead = lead.new_full((4, 13), l)
+    #lead = torch.ones(4, 13)
+    #lead = lead.new_full((4, 13), l)
     north = torch.zeros(4, 13)
     east = torch.zeros(4, 13)
     south = torch.zeros(4, 13)
@@ -91,7 +92,7 @@ def getRandomDeal(cards):
             south[(int)(cardInts[i]/13)][12-(cardInts[i]%13)] = 1
         else:
             west[(int)(cardInts[i]/13)][12-(cardInts[i]%13)]= 1
-    return torch.stack((lead, north, east, south, west), 0)
+    return torch.stack((north, east, south, west), 0)
 
 
 def getRandomDealOldFormat(cards):
