@@ -12,8 +12,24 @@ def convertToTensor(inputs, result):
     temp = torch.cat((inputs[0], inputs[1], inputs[2][0], inputs[3][0], inputs[4][0], inputs[5][0]),0)
     return torch.cat((temp.float(), torch.tensor([result]).float()),0)
     
+def generateDataTwoCard():
+    """Creates a file with randonly generated data that 
+    has both the inputs and outputs."""
+    random.seed(SEED)
+    for i in range(TRAINING_SIZE):
+        inputs = getRandomDeal(2)
+        result = torch.zeros(1, 4, 13)
+        result = result.new_full((1,4, 13), getResultTwoCardNT(inputs))
+        torch.save(torch.cat((inputs, result), 0), os.path.join('trn2', str(i)+'.pt'))
+        #torch.save(convertToTensor(inputs,result), os.path.join('trn', str(i)+'.pt'))
+    for i in range(VALIDATION_SIZE):
+        inputs = getRandomDeal(2)
+        result = torch.zeros(1,4, 13)
+        result = result.new_full((1,4, 13), getResultTwoCardNT(inputs))
+        torch.save(torch.cat((inputs, result), 0), os.path.join('val2', str(i)+'.pt'))
+        #torch.save(convertToTensor(inputs,result), os.path.join('val', str(i)+'.pt'))
 
-def generateData():
+def generateDataOneCard():
     """Creates a file with randomly generated data that 
     has both the inputs and outputs."""
     random.seed(SEED)
@@ -30,11 +46,59 @@ def generateData():
         torch.save(torch.cat((inputs, result), 0), os.path.join('val', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('val', str(i)+'.pt'))
 
+def getResultTwoCardNT(inputs):
+    """Generates the ground truth for a hand with only one card, no trump, and the new
+    input format. Output format is also changed to be 0 = N, ..., 3 = W"""
+    cards = [getValue2D(inputs[0]), getValue2D(inputs[1]), getValue2D(inputs[2]), getValue2D(inputs[3])]
+    tree = generateResultTree(cards)
+    return getOptimalResult(tree)
+
+def getOptimalResult(tree):
+    """Returns the optimal result for both sides playing correctly"""
+    optimal = 0
+    t1 = [0]*8
+    for i in range(8):
+        t1[i] = min(tree[i], tree[i+1])
+    t2 = [0]*4
+    for i in range(4):
+        t2[i] = max(tree[i], tree[i+1])
+    t3 = [0]*2
+    for i in range(2):
+        t3[i] = min(tree[i], tree[i+1])
+    return max(t3[0], t3[1])
+
+def generateResultTree(cards):
+    """Returns a 16 long array for the results of the tree based on the cards.
+    [0000, 0001, ..., 1111]"""
+    results = [0]*16
+    perms = [[0,0,0,0],[0,0,0,1],[0,0,1,0],[0,0,1,1],[0,1,0,0],[0,1,0,1],[0,1,1,0],[0,1,1,1],[1,0,0,0],[1,0,0,1],[1,0,1,0],[1,0,1,1],[1,1,0,0],[1,1,0,1],[1,1,1,0],[1,1,1,1]]
+    for i in range(len(perms)):
+        p = perms[i]
+        lead = 0
+        topCard = [lead, cards[lead][p[lead]]]
+        for j in range(3):
+            lead += 1
+            if cards[lead][p[lead]][0] == topCard[1][0]:
+                if cards[lead][p[lead]][1] > topCard[1][1]:
+                    topCard = [lead, cards[lead][p[lead]]]
+        results[i] += 1 - topCard[0]%2
+        lead = topCard[0]
+        topCard = [lead, cards[lead][1 - p[lead]]]
+        for j in range(3):
+            lead += 1
+            if lead > 3:
+                lead = 0
+            if cards[lead][1 - p[lead]][0] == topCard[1][0]:
+                if cards[lead][1 - p[lead]][1] > topCard[1][1]:
+                    topCard = [lead, cards[lead][1 - p[lead]]]
+        results[i] += 1 - topCard[0]%2
+    return results
+
 def getResultOneCardNT(inputs):
     """Generates the ground truth for a hand with only one card, no trump, and the new
     input format. Output format is also changed to be 0 = N, ..., 3 = W"""
     #cards = [getValue2D(inputs[1]), getValue2D(inputs[2]),getValue2D(inputs[3]),getValue2D(inputs[4])]
-    cards = [getValue2D(inputs[0]), getValue2D(inputs[1]),getValue2D(inputs[2]),getValue2D(inputs[3])]
+    cards = [getValue2D(inputs[0])[0], getValue2D(inputs[1])[0],getValue2D(inputs[2])[0],getValue2D(inputs[3])[0]]
     lead = 0#(int)(inputs[0][0][0].item())
     topCard = [lead, cards[lead]]
     for i in range(3):
@@ -139,11 +203,11 @@ def getCardAsTwoInputs(card):
 
 def getValue2D(onehot):
     """Takes a one-hot encoding in a 2D tensor and returns the list of the position of the 1"""
-    val = [0, 0]
+    val = []
     for i in range(len(onehot)):
         for j in range(len(onehot[i])):
             if onehot.data[i][j] == 1:
-                val = [i, j]
+                val += [[i, j]]
     return val
 
 
