@@ -150,15 +150,19 @@ for i in range(0, 10000):
 print(incorrectGuesses)"""
 correct = 0
 offByOne = 0
+offByTwo = 0
 for i in range(0, 10000):
-  guess = y_pred[i][0]
+  guess = torch.round(y_pred[i][0])
   actual = y[i]
   if guess == actual:
     correct += 1
   elif torch.abs(guess - actual) == 1:
     offByOne += 1
+  else:
+    offByTwo += 1
 print(correct)
 print(offByOne)
+print(offByTwo)
 
 #print(torch.sum(torch.abs(torch.round(y_pred)-y)))
 
