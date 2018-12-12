@@ -148,7 +148,19 @@ for i in range(0, 10000):
   if not guess[0] == y[i]:
     incorrectGuesses += 1
 print(incorrectGuesses)"""
-print(torch.sum(torch.abs(torch.round(y_pred)-y)))
+correct = 0
+offByOne = 0
+for i in range(0, 10000):
+  guess = y_pred[i][0]
+  actual = y[i]
+  if guess == actual:
+    correct += 1
+  elif torch.abs(guess - actual) == 1:
+    offByOne += 1
+print(correct)
+print(offByOne)
+
+#print(torch.sum(torch.abs(torch.round(y_pred)-y)))
 
 loss = loss_fn(torch.squeeze(y_pred), y)
 print("validation loss: ", loss.item())
