@@ -55,16 +55,33 @@ def getResultTwoCardNT(inputs):
 
 def getOptimalResult(tree):
     """Returns the optimal result for both sides playing correctly"""
-    optimal = 0
     t1 = [0]*8
     for i in range(8):
-        t1[i] = min(tree[i], tree[i+1])
+        if tree[2*i] == -1 or tree[2*i+1] == -1:
+            if tree[2*i] == -1:
+                t1[i] = tree[2*i+1]
+            else:
+                t1[i] = tree[2*i]
+        else:
+            t1[i] = min(tree[2*i], tree[2*i+1])
     t2 = [0]*4
     for i in range(4):
-        t2[i] = max(tree[i], tree[i+1])
+        if t1[2*i] == -1 or t1[2*i+1] == -1:
+            if t1[2*i] == -1:
+                t2[i] = t1[2*i+1]
+            else:
+                t2[i] = t1[2*i]
+        else:
+            t2[i] = max(t1[2*i], t1[2*i+1])
     t3 = [0]*2
     for i in range(2):
-        t3[i] = min(tree[i], tree[i+1])
+        if t2[2*i] == -1 or t2[2*i+1] == -1:
+            if t2[2*i] == -1:
+                t3[i] = t2[2*i+1]
+            else:
+                t3[i] = t2[2*i]
+        else:
+            t3[i] = min(t2[2*i], t2[2*i+1])
     return max(t3[0], t3[1])
 
 def generateResultTree(cards):
@@ -76,22 +93,28 @@ def generateResultTree(cards):
         p = perms[i]
         lead = 0
         topCard = [lead, cards[lead][p[lead]]]
+        illegalPlay = False
         for j in range(3):
             lead += 1
             if cards[lead][p[lead]][0] == topCard[1][0]:
                 if cards[lead][p[lead]][1] > topCard[1][1]:
                     topCard = [lead, cards[lead][p[lead]]]
-        results[i] += 1 - topCard[0]%2
-        lead = topCard[0]
-        topCard = [lead, cards[lead][1 - p[lead]]]
-        for j in range(3):
-            lead += 1
-            if lead > 3:
-                lead = 0
-            if cards[lead][1 - p[lead]][0] == topCard[1][0]:
-                if cards[lead][1 - p[lead]][1] > topCard[1][1]:
-                    topCard = [lead, cards[lead][1 - p[lead]]]
-        results[i] += 1 - topCard[0]%2
+            else:
+                illegalPlay = illegalPlay or (cards[lead][1 - p[lead]][0] == topCard[1][0])
+        if not illegalPlay:
+            results[i] += 1 - topCard[0]%2
+            lead = topCard[0]
+            topCard = [lead, cards[lead][1 - p[lead]]]
+            for j in range(3):
+                lead += 1
+                if lead > 3:
+                    lead = 0
+                if cards[lead][1 - p[lead]][0] == topCard[1][0]:
+                    if cards[lead][1 - p[lead]][1] > topCard[1][1]:
+                        topCard = [lead, cards[lead][1 - p[lead]]]
+            results[i] += 1 - topCard[0]%2
+        else:
+            results[i] = -1
     return results
 
 def getResultOneCardNT(inputs):
