@@ -12,13 +12,10 @@ this is where the nn package can help. The nn package defines a set of Modules,
 which you can think of as a neural network layer that has produces output from
 input and may have some trainable weights or other state.
 """
-def toSoftmax(y):
-  """Takes in an n x 1 x 4 x 13 vector of y and returns a n x 1 x 4.
-  The 4x13 are assumed to all have the same value, and that value is 
-  encoded as a one-hot in the 3rd dimension of the returned tensor"""
+def getValue(y):
   onehot = torch.zeros(y.size()[0])
   for i in range(y.size()[0]):
-    onehot[i] = (int)(y[i][0][0][0].item())%2
+    onehot[i] = (int)(y[i][0][0][0].item())
   return onehot
 
 device = torch.device('cpu')
@@ -36,7 +33,7 @@ for i in range(0,100000):
 print("loaded training data")
 x = torch.stack(x_list)
 y = torch.index_select(x, 1, torch.tensor([4]))
-y = toSoftmax(y)
+y = getValue(y)
 x = torch.index_select(x, 1, torch.tensor(range(4)))
 #x = torch.rand(N, D_in, device=device)s
 #y = torch.rand(N, D_out, device=device)
@@ -131,7 +128,7 @@ for i in range(0,10000):
 
 x = torch.stack(x_list)
 y = torch.index_select(x, 1, torch.tensor([4]))
-y = toSoftmax(y)
+y = getValue(y)
 x = torch.index_select(x, 1, torch.tensor(range(4)))
 
 y_pred = model(x)
@@ -149,11 +146,20 @@ for i in range(0, 10000):
     incorrectGuesses += 1
 print(incorrectGuesses)"""
 correct = 0
+y0 = 0
 offByOne = 0
+y1 = 0
 offByTwo = 0
+y2 = 0
 for i in range(0, 10000):
   guess = torch.round(y_pred[i][0])
   actual = y[i]
+  if y[i] == 0:
+    y0 += 1
+  elif y[i] == 1:
+    y1 += 1
+  else:
+    y2 += 1
   if guess == actual:
     correct += 1
   elif torch.abs(guess - actual) == 1:
