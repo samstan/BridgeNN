@@ -1,5 +1,7 @@
 #Code to create data sets for training
 
+#Jake Williams and Samuel Tan
+
 import torch
 import random
 import os
@@ -9,6 +11,7 @@ TRAINING_SIZE = 100000
 VALIDATION_SIZE = 10000
 
 def convertToTensor(inputs, result):
+    """Converts 6 tensors, representing input, into 1, and concatenates results... outdated"""
     temp = torch.cat((inputs[0], inputs[1], inputs[2][0], inputs[3][0], inputs[4][0], inputs[5][0]),0)
     return torch.cat((temp.float(), torch.tensor([result]).float()),0)
     
@@ -20,12 +23,14 @@ def generateDataTwoCard():
         inputs = getRandomDeal(2)
         result = torch.zeros(1, 4, 13)
         result = result.new_full((1,4, 13), getResultTwoCardNT(inputs))
+        #requires a trn2 folder in directory
         torch.save(torch.cat((inputs, result), 0), os.path.join('trn2', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('trn', str(i)+'.pt'))
     for i in range(VALIDATION_SIZE):
         inputs = getRandomDeal(2)
         result = torch.zeros(1,4, 13)
         result = result.new_full((1,4, 13), getResultTwoCardNT(inputs))
+        #requires a val2 folder in directory
         torch.save(torch.cat((inputs, result), 0), os.path.join('val2', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('val', str(i)+'.pt'))
 
@@ -37,12 +42,14 @@ def generateDataOneCard():
         inputs = getRandomDeal(1)
         result = torch.zeros(1, 4, 13)
         result = result.new_full((1,4, 13), getResultOneCardNT(inputs))
+        #requires a trn folder in directory
         torch.save(torch.cat((inputs, result), 0), os.path.join('trn', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('trn', str(i)+'.pt'))
     for i in range(VALIDATION_SIZE):
         inputs = getRandomDeal(1)
         result = torch.zeros(1,4, 13)
         result = result.new_full((1,4, 13), getResultOneCardNT(inputs))
+        #requires a val folder in directory
         torch.save(torch.cat((inputs, result), 0), os.path.join('val', str(i)+'.pt'))
         #torch.save(convertToTensor(inputs,result), os.path.join('val', str(i)+'.pt'))
 
