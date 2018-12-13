@@ -1,6 +1,8 @@
 # BridgeNN
 Double Dummy Bridge Implementation using Neural Networks
 
+(Google Presentation: https://docs.google.com/presentation/d/1tSIXhCBVx2m3kigLrA73syW74sJSr-ld80KX8RmpEsA/edit#slide=id.g49dcd0f2da_0_91)
+
 ### Goal: 
 To create a Neural Network which will be able to accurately predict the final result of a bridge hand given full information.
 
