@@ -21,11 +21,17 @@ Intermediate Process:
 
 
 Sources Used in Research: 
+
 https://github.com/dds-bridge
+
 http://cs229.stanford.edu/proj2016/report/Mernagh-LearningADoubleDummyBridgeSolver-report.pdf
+
 http://privat.bahnhof.se/wb758135/bridge/index.html
+
 https://link.springer.com/content/pdf/10.1007%2Fb98109.pdf
+
 https://github.com/anntzer/redeal
+
 https://www.youtube.com/watch?v=CRBNI8UdHhE&t=1168s
 
 
