@@ -13,8 +13,11 @@ Data:
 Used DDS Double Dummy Solver (https://github.com/dds-bridge) to get ground truth for full hands. Ground truth saved in file 'sol100000.txt', then parsed into tensors to run through nets. 
 
 Results:
+
 Off by 0 Accuracy: 34.2
+
 Off by 1 Accuracy: 80.6
+
 Off by 2 Accuracy: 96.2
 
 Intermediate Process:
