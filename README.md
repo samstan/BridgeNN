@@ -10,7 +10,7 @@ Inputs are (4, 4, 13) shaped tensors. The player on lead has their cards in the 
 Loss was determined by Mean Square Error, and accuracy was measured as a percentage off by zero, one, or two.
 
 Data:
-Used DDS Double Dummy Solver (https://github.com/dds-bridge) to get ground truth for full hands.
+Used DDS Double Dummy Solver (https://github.com/dds-bridge) to get ground truth for full hands. Ground truth saved in file 'sol100000.txt', then parsed into tensors to run through nets. 
 
 Results:
 Off by 0 Accuracy: 34.2
