@@ -1,18 +1,18 @@
 # BridgeNN
 Double Dummy Bridge Implementation using Neural Networks
 
-## Goal: 
+### Goal: 
 To create a Neural Network which will be able to accurately predict the final result of a bridge hand given full information.
 
-## Final Model: 
+### Final Model: 
 Two layers of CNNs with ReLUs, a fully connected layer, and a sigmoid output. The output layer is multipied by the number of cards in the hand.
 Inputs are (4, 4, 13) shaped tensors. The player on lead has their cards in the first "column" of the input tensor, and the hands move around the table from there.
 Loss was determined by Mean Square Error, and accuracy was measured as a percentage off by zero, one, or two.
 
-## Data:
+### Data:
 Used DDS Double Dummy Solver (https://github.com/dds-bridge) to get ground truth for full hands. Ground truth saved in file 'sol100000.txt', then parsed into tensors to run through nets. 
 
-## Results:
+### Results:
 
 Off by 0 Accuracy: 34.2
 
@@ -20,7 +20,7 @@ Off by 1 Accuracy: 80.6
 
 Off by 2 Accuracy: 96.2
 
-## Intermediate Process:
+### Intermediate Process:
 
 
 ### Sources Used in Research: 
